@@ -26,16 +26,18 @@ fn criterion_benchmark(c: &mut Criterion) {
     let mut group = c.benchmark_group("CUDA");
     group.sample_size(20);
 
-    let name = format!("2**{}", npoints_npow);
-    group.bench_function(name, |b| {
-        b.iter(|| {
-            let _ = multi_scalar_mult_arkworks(&points.as_slice(), unsafe {
-                std::mem::transmute::<&[_], &[BigInteger256]>(
-                    scalars.as_slice(),
-                )
-            });
-        })
-    });
+    for i in 18..=npoints_npow {
+        let name = format!("2**{}", i);
+        group.bench_function(name, |b| {
+            b.iter(|| {
+                let _ = multi_scalar_mult_arkworks(&points[..(1<<i)], unsafe {
+                    std::mem::transmute::<&[_], &[BigInteger256]>(
+                        &scalars[..(1<<i)],
+                    )
+                });
+            })
+        });
+    }
 
     group.finish();
 }
